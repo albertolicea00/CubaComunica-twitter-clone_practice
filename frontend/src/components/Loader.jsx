@@ -1,3 +1,11 @@
+/**
+ * Componente Loader.
+ * 
+ * Un componente de React que muestra un indicador de carga mientras se espera que se complete una operación asíncrona.
+ * 
+ * @component
+ * @returns {JSX.Element} El componente Loader con un indicador de carga animado.
+ */
 const Loader = () => (
     <div className="flex min-h-full items-center justify-center py-14  ">
       <div className='m-5 p-10'>

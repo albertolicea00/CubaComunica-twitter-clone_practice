@@ -4,9 +4,18 @@ import Loader from "../components/Loader"
 import toast from "react-hot-toast"
 import { Link } from "react-router-dom"
 import { useEffect } from "react"
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
+
+/**
+ * Componente funcional que muestra las notificaciones del usuario.
+ * Permite marcar las notificaciones como leídas y proporciona enlaces a las acciones relacionadas.
+ *
+ * @returns {JSX.Element} Elemento JSX que contiene la interfaz de las notificaciones.
+ */
 const Noti = () => {
-
+  const APIbaseURL = "http://127.0.0.1:8000"; // process.env.REACT_APP_API_BASE_URL;
   const queryClient = useQueryClient()
 
   const markMutation = useMutation({
@@ -41,7 +50,7 @@ const Noti = () => {
           <div>
             <div className="flex flex-row items-center gap-2">
               <p className="text-white font-semibold text-xl">
-                All Notifications
+                Novedades
               </p>
             </div>
           </div>
@@ -49,32 +58,32 @@ const Noti = () => {
         </div>
       </div>
 
-      {data?.map((t) => (
-        <div key={t.id}>
-            <div key={t.id} className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition">
+      {data?.map((p) => (
+        <div key={p.id}>
+            <div key={p.id} className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition">
               <div className="flex flex-row items-start gap-3">
 
-                <img className="h-11 w-11 rounded-full" src={`http://127.0.0.1:8000${t.avatar}`} />
+                <img className="h-11 w-11 rounded-full" 
+                src={`${APIbaseURL + p.avatar}`} />
 
                 <div>
                   <div className="flex flex-row items-center gap-2">
 
                     <p className="text-white font-semibold cursor-pointer hover:underline">
-                      <Link to={`${t.user}`}>
-                      @{t.from_user}
+                      <Link to={`${p.user}`}>
+                      @{p.from_user}
                       </Link>
                     </p>
 
                     <span className="text-neutral-500 text-sm">
-
-                      {new Date(t.created_at).toDateString().slice(4)}
+                      {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: es })}
                     </span>
 
                   </div>
 
 
                   <div className="text-white mt-1 text-start">
-                    {t.type}
+                    {p.type}
                   </div>
 
 

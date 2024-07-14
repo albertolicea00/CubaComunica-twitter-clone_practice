@@ -1,27 +1,35 @@
-import useWebSocket from "react-use-websocket";
-import jwt_decode from "jwt-decode"
+import  useWebSocket  from "react-use-websocket";
+import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"
 import { useParams } from "react-router-dom"
 import { useState } from "react"
 import { getChat } from "../api/chat";
 import { useQuery } from "@tanstack/react-query";
+import { AiOutlineArrowLeft,} from "react-icons/ai";
 import toast from "react-hot-toast";
 import Loader from "../components/Loader";
 
+
+
+/**
+ * Página que muestra la interfaz de chat entre el usuario y otro usuario específico.
+ *
+ * @returns {JSX.Element} Elemento JSX que representa la página de chat.
+ */
 const Chat = () => {
 
   const { user } = useParams()
 
-  const token_votify = jwt_decode(localStorage.getItem("access"))
-  const me = token_votify.username
+  const { username: me } = jwtDecode(localStorage.getItem("access"));
 
   const [messageHistory, setMessageHistory] = useState([])
   const [message, setMessage] = useState('')
-
+  
+  // Obtiene la información del chat entre el usuario actual y el usuario especificado.
   const { data: canal, isLoading, isError, error } = useQuery({
     queryKey: ['chat', user],
     queryFn: () => getChat(user),
   })
-
 
     const baseURL = import.meta.env.VITE_BACKEND_WS
 
@@ -29,18 +37,23 @@ const Chat = () => {
     onOpen: () => {
       console.log('Connected!')
     },
-    onClose: () => {
+    onClose: (e) => {
+      console.log(e)
       console.log('Disconnected!')
     },
     onMessage: (e) => {
-      const data = JSON.parse(e.data)
-      switch (data.type) {
-        case 'chat_message_echo':
-          setMessageHistory((prev) => prev.concat(data))
-          break
-        default:
-          console.error('Received unknown message type: ', data.type)
-          break
+      try {
+        const data = JSON.parse(e.data)
+        switch (data.type) {
+          case 'chat_message_echo':
+            setMessageHistory((prev) => prev.concat(data))
+            break
+          default:
+            console.error('Received unknown message type: ', data.type)
+            break
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
       }
     }
   })
@@ -54,7 +67,9 @@ const Chat = () => {
     setMessage('')
   }
 
+  // Combina el historial de mensajes del chat y el historial local de mensajes.
   if(canal) {
+    const sortedChat = [...canal, ...messageHistory].sort((a, b) => a.timestamp - b.timestamp);
     var chat = ([...canal, ...messageHistory])
   }
 
@@ -63,11 +78,18 @@ const Chat = () => {
 
   return (
     <>
+      {/* Cabecera de la página */}
       <div className="border-b-[1px] border-neutral-800 p-5">
         <div className="flex flex-row items-start gap-3">
 
           <div>
             <div className="flex flex-row items-center gap-2">
+            <Link to={'/contacts'}>
+                <AiOutlineArrowLeft
+                  size={20}
+                  className="mr-4 hover:text-slate-200 text-slate-500 cursor-pointer"
+                />
+              </Link>
               <p className="text-white font-semibold text-xl">
                 {user}
               </p>
@@ -76,29 +98,26 @@ const Chat = () => {
 
         </div>
       </div>
-
+      
+      {/* Historial de mensajes */}
       <div className="border-b-[1px] border-neutral-800 p-5 cursor-pointer ">
-        <div class="relative w-full p-6 overflow-y-auto h-[40rem]">
-          <ul class="space-y-2">
-
+        <div className="relative w-full p-6 overflow-y-auto h-[40rem]">
+          <ul className="space-y-2">
             {chat.map((message) => (
-
               <>
-
               {message.username === me ? (
-
-                <li class="flex justify-end">
-                  <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-gray-100 rounded shadow">
-                    <span class="block">{message.message}</span>
+                <li className="flex justify-end">
+                  <div className="relative max-w-xl px-4 py-2 text-gray-700 bg-gray-100 rounded shadow">
+                    <span className="block">{message.message}</span>
                   </div>
                 </li>
 
               ) : (
 
-                  <li class="flex justify-start">
-                    <div class="relative max-w-xl px-4 py-2 text-gray-700 bg-gray-100 rounded shadow">
+                  <li className="flex justify-start">
+                    <div className="relative max-w-xl px-4 py-2 text-gray-700 bg-gray-100 rounded shadow">
                       <span className="block text-indigo-600 xl:inline">{message.username}</span>
-                      <span class="block">{message.message}</span>
+                      <span className="block">{message.message}</span>
                     </div>
                   </li>
 
@@ -112,14 +131,15 @@ const Chat = () => {
         </div>
       </div>
 
-      <div class="flex items-center justify-between w-full p-3 ">
-
+      {/* Área de entrada de mensajes */}
+      <div className="flex items-center justify-between w-full p-3 ">
         <input type="text" placeholder="Message"
           onChange={(e) => setMessage(e.target.value)}
           value={message}
-          class="block w-full py-2 pl-4 mx-3 bg-slate-200 rounded-full outline-none focus:text-gray-900"
+          className="block w-full py-2 pl-4 mx-3 bg-slate-200 rounded-full outline-none focus:text-gray-900"
           required />
 
+    {/* Botón para enviar mensajes */}
         <button 
           onClick={sendMsj}
           type='submit'>

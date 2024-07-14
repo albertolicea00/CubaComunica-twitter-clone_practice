@@ -1,18 +1,36 @@
 import { useQuery } from "@tanstack/react-query"
 import { AiOutlineMessage } from "react-icons/ai"
-import { getUserLikes } from "../api/tweets"
+import { getUserLikes } from "../api/blog"
 import { toast } from "react-hot-toast"
 import Loader from "./Loader"
 import Like from "./Like"
-import Rt from "./Rt"
+import Shared from "./Shared"
 import { Link } from "react-router-dom"
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
+
+/**
+ * Componente MyLikes.
+ * 
+ * Un componente de React que muestra las publicaciones que a un usuario le han gustado.
+ * Utiliza React Query para obtener las publicaciones desde el servidor.
+ * Muestra la información de cada publicación, como el usuario que la hizo,
+ * la fecha de creación, el contenido de la publicación y estadísticas como comentarios,
+ * compartidos y likes.
+ * 
+ * @component
+ * @param {Object} props - Las propiedades pasadas al componente.
+ * @param {Object} props.user - El objeto de usuario para el cual se están mostrando las publicaciones que le han gustado.
+ * 
+ * @returns {JSX.Element} El componente MyLikes con las publicaciones que le han gustado al usuario.
+ */
 const MyLikes = ({ user }) => {
-
+  const APIbaseURL = "http://127.0.0.1:8000"; // process.env.REACT_APP_API_BASE_URL;
   const userId = localStorage.getItem('user_id')
 
   const { data: likes, isLoading, isError, error } = useQuery({
-    queryKey: ["tweets"],
+    queryKey: ["posts"],
     queryFn: () => getUserLikes(user.username),
   })
 
@@ -21,62 +39,60 @@ const MyLikes = ({ user }) => {
 
   return (
     <>
-    {likes.map && likes.map(t => (
-  <div key={t.id} className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition">
+    {likes.map && likes.map(p => (
+  <div key={p.id} className="border-b-[1px] border-neutral-800 p-5 cursor-pointer hover:bg-neutral-900 transition">
     <div className="flex flex-row items-start gap-3">
 
-      <img className="h-11 w-11 rounded-full" src={t.avatar} />
+      <img className="h-11 w-11 rounded-full" src={APIbaseURL + p.avatar} />
 
       <div>
         <div className="flex flex-row items-center gap-2">
 
           <p className="text-white font-semibold cursor-pointer hover:underline">
-            {t.user}
+            {p.user}
           </p>
 
 
           <span className="text-neutral-500 text-sm">
-            {new Date(t.created_at).toDateString().slice(4)}
+            {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: es })}
           </span>
 
         </div>
 
           <span className="text-neutral-500 cursor-pointer hover:underline hidden md:block">
-            @{t.user}
+            @{p.user}
           </span>
 
         <div className="text-white mt-1 text-start">
-          {t.content}
+          {p.content}
         </div>
-
-          <img src={`http://127.0.0.1:8000${t.image}`} />
-
+        { p.image ? <img src={`${ APIbaseURL + p.image}`} /> : '' }
         <div className="flex flex-row items-center mt-3 gap-10">
 
           <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-sky-500">
 
-          <Link to={`/tweet/${t.id}`}>
+          <Link to={`/post/${p.id}`}>
 
                       <AiOutlineMessage size={20} />
                       </Link>
 
                       <p>
-                        {t.parent.length}
+                        {p.parent.length}
                       </p>
 
           </div>
 
           <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-green-500">
-            <Rt t={t} user={userId}/>
+            <Shared p={p} user={userId}/>
             <p>
-              {t.retweets_count}
+              {p.shareds_count}
             </p>
           </div>
 
           <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500">
-            <Like t={t} user={userId} />
+            <Like p={p} user={userId} />
             <p>
-              {t.likes_count}
+              {p.likes_count}
             </p>
           </div>
 

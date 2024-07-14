@@ -9,6 +9,19 @@ from . serializers import ChatSerializer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def chat(request, username):
+    """
+    Vista para obtener mensajes de chat entre el usuario autenticado y otro usuario.
+
+    Métodos HTTP admitidos:
+        - GET: Obtiene los mensajes de chat entre el usuario autenticado y otro usuario.
+
+    Args:
+        request: Objeto de solicitud con el usuario autenticado.
+        username (str): Nombre de usuario del otro usuario con el que se desea obtener el chat.
+
+    Returns:
+        Response: Respuesta JSON con los mensajes de chat.
+    """
     user_obj = User.objects.get(username=username)
 
     if request.user.username > user_obj.username:
@@ -22,5 +35,3 @@ def chat(request, username):
     mess = Chat.objects.filter(canal=canal)
     serializer = ChatSerializer(mess, many=True)
     return Response(serializer.data)
-
-

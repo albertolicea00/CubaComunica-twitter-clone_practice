@@ -1,2 +1,11 @@
 .env
 env
+
+.venv
+venv
+
+.vscode
+__pycache__
+__init__.py
+/media
+db.sqlite3
