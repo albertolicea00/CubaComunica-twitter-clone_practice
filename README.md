@@ -22,10 +22,29 @@ source env/bin/activate
 venv\Scripts\activate.bat
 ```
 
-- instala dependencias y corre el servidor
+- instala dependencias
 ```bash
 pip install -r requirements.txt
+
+```
+- correr las migraciones
+```bash
+python manage.py migrate
+```
+
+- crear super-usuario con privilegios de administrador
+```bash
+python manage.py createsuperuser
+```
+
+- corre el servidor
+```bash
 python manage.py runserver
+```
+
+- corre los tests
+```bash
+python manage.py test
 ```
 
 - en una nueva terminal instala las dependencias de react y corre el servidor
